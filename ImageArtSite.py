@@ -4,6 +4,7 @@ import numpy as np
 import cv2
 from flask import Flask, flash, request, redirect, url_for, send_from_directory, render_template, session, g
 from werkzeug.utils import secure_filename
+import click
 
 
 app = Flask(__name__)
@@ -49,6 +50,13 @@ def show_uploaded_file(filename):
     return render_template('base.html', file_paths=file_paths)
 
 
+@app.cli.command('model-download')
+def model_dl_command():
+    import subprocess
+    subprocess.call(['./static/download_style_transfer_models.sh'])
+    click.echo('Downloaded style transfer models.')
+
+
 def allowed_file(filename):
     allowed_extensions = {'png', 'jpg', 'jpeg'}
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in allowed_extensions
@@ -87,7 +95,7 @@ def expand_to_aspect_ratio(image, aspect_ratio=4/3, final_shape=None):
 
 def style_transfer(image):
 
-    models =
+    models = []  # TODO fill this in
     st_images = []
     means_bgr = (103.939, 116.779, 123.680)
     for model_path in models:
@@ -109,4 +117,5 @@ def style_transfer(image):
 # Run with cli in ImageArtSite.py folder:
 # > export FLASK_APP=ImageArtSite.py			# On windows export -> set
 # > export FLASK_ENV=development		        # Use this to enable debug mode. The server will auto reload on code changes.
+# > flask model-download
 # > flask run

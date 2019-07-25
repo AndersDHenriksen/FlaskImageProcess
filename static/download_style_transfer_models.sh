@@ -1,7 +1,9 @@
-BASE_URL="http://cs.stanford.edu/people/jcjohns/fast-neural-style/models/"
+#!/usr/bin/env bash
 
-mkdir -p models/instance_norm
-cd models/instance_norm
+BASE_URL="https://cs.stanford.edu/people/jcjohns/fast-neural-style/models/"
+
+mkdir -p static/models/instance_norm
+cd static/models/instance_norm
 curl -O "$BASE_URL/instance_norm/candy.t7"
 curl -O "$BASE_URL/instance_norm/la_muse.t7"
 curl -O "$BASE_URL/instance_norm/mosaic.t7"
