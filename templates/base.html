@@ -1,0 +1,25 @@
+<!doctype html>
+<title>Image2Art</title>
+<h1>Image2Art</h1>
+
+<p>
+    Welcome to Image2Art server. Start by uploading a file. <br>
+</p>
+
+{% for message in get_flashed_messages() %}
+<div class="flash">
+    {{ message }}
+</div>
+{% endfor %}
+
+<form method=post enctype=multipart/form-data>
+  <input type=file name=file>
+  <input type=submit value=Upload>
+</form>
+
+<p>
+    Original image. Server path: {{file_paths and file_paths['uploaded_file_path']}} <br>
+    <img src="{{ file_paths['uploaded_file_path'] | default('static/cat.jpg') }}"
+         alt="Uploaded image" width="640" height="480" />
+</p>
+
