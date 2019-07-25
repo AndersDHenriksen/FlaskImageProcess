@@ -85,6 +85,27 @@ def expand_to_aspect_ratio(image, aspect_ratio=4/3, final_shape=None):
     return image
 
 
+def style_transfer(image):
+
+    models =
+    st_images = []
+    means_bgr = (103.939, 116.779, 123.680)
+    for model_path in models:
+        (h, w) = image.shape[:2]
+        net = cv2.dnn.readNetFromTorch(model_path)
+        blob = cv2.dnn.blobFromImage(image, 1.0, (w, h), means_bgr, swapRB=False, crop=False)
+        net.setInput(blob)
+        output = net.forward()
+        output = output.reshape((3, output.shape[2], output.shape[3]))
+        for i in range(3):
+            output[i] += means_bgr[i]
+        output /= 255.0
+        output = output.transpose(1, 2, 0)
+        st_images.append(output)
+
+    return st_images
+    # Reference: https://www.pyimagesearch.com/2018/08/27/neural-style-transfer-with-opencv/
+
 # Run with cli in ImageArtSite.py folder:
 # > export FLASK_APP=ImageArtSite.py			# On windows export -> set
 # > export FLASK_ENV=development		        # Use this to enable debug mode. The server will auto reload on code changes.
