@@ -125,12 +125,15 @@ def expand_to_aspect_ratio(image, aspect_ratio=4/3, final_shape=None):
         image = cv2.copyMakeBorder(image, dh1, dh - dh1, 0, 0, cv2.BORDER_CONSTANT, 0)
 
     if final_shape:
-        image = cv2.resize(image, final_shape[::-1])
+        image = cv2.resize(image, final_shape[:2][::-1])
 
     return image
 
 
 def style_transfer(image, model_path):
+    input_shape = image.shape
+    image = image[:, image.any(axis=(0, 2))]  # Remove black row, columns
+    image = image[image.any(axis=(1, 2)), :]
     means_bgr = (103.939, 116.779, 123.680)
     (h, w) = image.shape[:2]
     net = cv2.dnn.readNetFromTorch(model_path)
@@ -141,6 +144,7 @@ def style_transfer(image, model_path):
     for i in range(3):
         output[i] += means_bgr[i]
     output = output.transpose(1, 2, 0).clip(min=0, max=255).astype(np.uint8)
+    output = expand_to_aspect_ratio(output, final_shape=input_shape)
 
     return output
     # Reference: https://www.pyimagesearch.com/2018/08/27/neural-style-transfer-with-opencv/
