@@ -40,7 +40,7 @@ def upload_file():
 
 @app.route('/images/<filename>')
 def serve_file(filename):
-    return send_from_directory(app.config['UPLOAD_FOLDER'], filename)  # , cache_timeout=0
+    return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
 
 
 @app.route('/uploads/<filename>')

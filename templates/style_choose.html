@@ -1,7 +1,52 @@
 {% include 'base.html' %}
 
+<!-- Choose with hyperlinks
 <p>
     Choose a style
     <a href="{{ url_for('show_style_transfer_image', filename=g.filename, style='candy') }}">Candy</a>
     <a href="{{ url_for('show_style_transfer_image', filename=g.filename, style='composition_vii') }}">Composition VII</a>
 </p>
+-->
+
+<div class="row">
+  <div class="column">
+      <a href="{{ url_for('show_style_transfer_image', filename=g.filename, style='candy') }}">
+        <img class="style" src="/static/styles/candy.jpg" alt="Candy"> </a>
+  </div>
+  <div class="column">
+    <a href="{{ url_for('show_style_transfer_image', filename=g.filename, style='composition_vii') }}">
+        <img class="style" src="/static/styles/composition_vii.jpg" alt="Composition VII"> </a>
+  </div>
+  <div class="column">
+    <a href="{{ url_for('show_style_transfer_image', filename=g.filename, style='feathers') }}">
+        <img class="style" src="/static/styles/feathers.jpg" alt="Feathers"> </a>
+  </div>
+</div>
+<div class="row">
+  <div class="column">
+      <a href="{{ url_for('show_style_transfer_image', filename=g.filename, style='la_muse') }}">
+          <img class="style" src="/static/styles/la_muse.jpg" alt="La Muse"> </a>
+  </div>
+  <div class="column">
+      <a href="{{ url_for('show_style_transfer_image', filename=g.filename, style='mosaic') }}">
+          <img class="style" src="/static/styles/mosaic.jpg" alt="Mosaic"> </a>
+  </div>
+  <div class="column">
+    <a href="{{ url_for('show_style_transfer_image', filename=g.filename, style='starry_night') }}">
+        <img class="style" src="/static/styles/starry_night.jpg" alt="Starry night"> </a>
+  </div>
+</div>
+<div class="row">
+  <div class="column">
+    <a href="{{ url_for('show_style_transfer_image', filename=g.filename, style='the_scream') }}">
+        <img class="style" src="/static/styles/the_scream.jpg" alt="The scream"> </a>
+  </div>
+  <div class="column">
+    <a href="{{ url_for('show_style_transfer_image', filename=g.filename, style='the_wave') }}">
+        <img class="style" src="/static/styles/the_wave.jpg" alt="The wave"> </a>
+  </div>
+  <div class="column">
+    <a href="{{ url_for('show_style_transfer_image', filename=g.filename, style='udnie') }}">
+        <img class="style" src="/static/styles/udnie.jpg" alt="Udnie"> </a>
+  </div>
+</div>
