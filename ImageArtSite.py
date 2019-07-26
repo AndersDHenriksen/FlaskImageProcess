@@ -31,9 +31,8 @@ def upload_file():
             return redirect(request.url)
         if file and allowed_file(file.filename):
             filename = secure_filename(file.filename)
-            uploaded_path = app.config['UPLOAD_FOLDER'] / filename
-            file.save(str(uploaded_path))
-            process_image(uploaded_path)
+            file.save(filename2path(filename))
+            process_upload(filename)
             return redirect(url_for('show_uploaded_file', filename=filename))
         flash("Must be image file (png, jpg, jpeg)")
     return render_template('base.html', file_paths=None)
@@ -46,7 +45,15 @@ def serve_file(filename):
 
 @app.route('/uploads/<filename>')
 def show_uploaded_file(filename):
-    filename_st = filename.rsplit('.', 1)[0] + '_st.png'
+    g.filename = filename
+    file_paths = {"uploaded_path": url_for('serve_file', filename=filename)}
+    return render_template('style_choose.html', file_paths=file_paths)
+
+
+@app.route('/uploads/<filename>/<style>')
+def show_style_transfer_image(filename, style):
+    g.filename = filename
+    filename_st = apply_style_transfer(filename, style)
     file_paths = {"uploaded_path": url_for('serve_file', filename=filename),
                   "style_transfer_path": url_for('serve_file', filename=filename_st)}
     return render_template('style_transfer.html', file_paths=file_paths)
@@ -64,15 +71,40 @@ def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in allowed_extensions
 
 
-def process_image(uploaded_path):
-    uploaded_path = str(uploaded_path)
+def filename2path(filename):
+    return str(app.config['UPLOAD_FOLDER'] / filename)
+
+
+def process_upload(filename):
+    uploaded_path = filename2path(filename)
     user_image = cv2.imread(uploaded_path)
     user_image = expand_to_aspect_ratio(user_image, final_shape=app.config['IMAGE_WH'][::-1])
     cv2.imwrite(uploaded_path, user_image)
 
+
+def apply_style_transfer(filename, style):
+    uploaded_path = filename2path(filename)
+    user_image = cv2.imread(uploaded_path)
     st_path = uploaded_path.rsplit('.', 1)[0] + '_st.png'
-    st_image = style_transfer(user_image)
+    st_filename = Path(st_path).name
+
+    model_dir1 = './static/models/eccv16/'
+    model_dir2 = './static/models/instance_norm/'
+    style_model_map = \
+        {'candy': model_dir2 + 'candy.t7',
+         'composition_vii': model_dir1 + 'composition_vii.t7',
+         'feathers': model_dir2 + 'feathers.t7',
+         'la_muse': model_dir2 + 'la_muse.t7',
+         'mosaic': model_dir2 + 'mosaic.t7',
+         'starry_night': model_dir1 + 'starry_night.t7',
+         'the_scream': model_dir2 + 'the_scream.t7',
+         'the_wave': model_dir1 + 'the_wave.t7',
+         'udnie': model_dir2 + 'udnie.t7'}
+    model_path = style_model_map[style]
+
+    st_image = style_transfer(user_image, model_path)
     cv2.imwrite(st_path, st_image)
+    return st_filename
 
 
 def expand_to_aspect_ratio(image, aspect_ratio=4/3, final_shape=None):
@@ -98,8 +130,7 @@ def expand_to_aspect_ratio(image, aspect_ratio=4/3, final_shape=None):
     return image
 
 
-def style_transfer(image):
-    model_path = '/home/ahe/Projects/FlaskImageProcess/static/models/instance_norm/la_muse.t7'
+def style_transfer(image, model_path):
     means_bgr = (103.939, 116.779, 123.680)
     (h, w) = image.shape[:2]
     net = cv2.dnn.readNetFromTorch(model_path)

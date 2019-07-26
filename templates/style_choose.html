@@ -1,0 +1,7 @@
+{% include 'base.html' %}
+
+<p>
+    Choose a style
+    <a href="{{ url_for('show_style_transfer_image', filename=g.filename, style='candy') }}">Candy</a>
+    <a href="{{ url_for('show_style_transfer_image', filename=g.filename, style='composition_vii') }}">Composition VII</a>
+</p>
