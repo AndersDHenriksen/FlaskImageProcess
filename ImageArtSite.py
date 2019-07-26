@@ -31,9 +31,9 @@ def upload_file():
             return redirect(request.url)
         if file and allowed_file(file.filename):
             filename = secure_filename(file.filename)
-            uploaded_file_path = app.config['UPLOAD_FOLDER'] / filename
-            file.save(str(uploaded_file_path))
-            process_image(uploaded_file_path)
+            uploaded_path = app.config['UPLOAD_FOLDER'] / filename
+            file.save(str(uploaded_path))
+            process_image(uploaded_path)
             return redirect(url_for('show_uploaded_file', filename=filename))
         flash("Must be image file (png, jpg, jpeg)")
     return render_template('base.html', file_paths=None)
@@ -46,8 +46,10 @@ def serve_file(filename):
 
 @app.route('/uploads/<filename>')
 def show_uploaded_file(filename):
-    file_paths = {"uploaded_file_path": url_for('serve_file', filename=filename)}
-    return render_template('base.html', file_paths=file_paths)
+    filename_st = filename.rsplit('.', 1)[0] + '_st.png'
+    file_paths = {"uploaded_path": url_for('serve_file', filename=filename),
+                  "style_transfer_path": url_for('serve_file', filename=filename_st)}
+    return render_template('style_transfer.html', file_paths=file_paths)
 
 
 @app.cli.command('model-download')
@@ -62,12 +64,15 @@ def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in allowed_extensions
 
 
-def process_image(uploaded_file_path):
-    uploaded_file_path = str(uploaded_file_path)
-    user_image = cv2.imread(uploaded_file_path)
+def process_image(uploaded_path):
+    uploaded_path = str(uploaded_path)
+    user_image = cv2.imread(uploaded_path)
     user_image = expand_to_aspect_ratio(user_image, final_shape=app.config['IMAGE_WH'][::-1])
-    cv2.imwrite(uploaded_file_path, user_image)
-    print(uploaded_file_path)
+    cv2.imwrite(uploaded_path, user_image)
+
+    st_path = uploaded_path.rsplit('.', 1)[0] + '_st.png'
+    st_image = style_transfer(user_image)
+    cv2.imwrite(st_path, st_image)
 
 
 def expand_to_aspect_ratio(image, aspect_ratio=4/3, final_shape=None):
@@ -94,24 +99,19 @@ def expand_to_aspect_ratio(image, aspect_ratio=4/3, final_shape=None):
 
 
 def style_transfer(image):
-
-    models = []  # TODO fill this in
-    st_images = []
+    model_path = '/home/ahe/Projects/FlaskImageProcess/static/models/instance_norm/la_muse.t7'
     means_bgr = (103.939, 116.779, 123.680)
-    for model_path in models:
-        (h, w) = image.shape[:2]
-        net = cv2.dnn.readNetFromTorch(model_path)
-        blob = cv2.dnn.blobFromImage(image, 1.0, (w, h), means_bgr, swapRB=False, crop=False)
-        net.setInput(blob)
-        output = net.forward()
-        output = output.reshape((3, output.shape[2], output.shape[3]))
-        for i in range(3):
-            output[i] += means_bgr[i]
-        output /= 255.0
-        output = output.transpose(1, 2, 0)
-        st_images.append(output)
+    (h, w) = image.shape[:2]
+    net = cv2.dnn.readNetFromTorch(model_path)
+    blob = cv2.dnn.blobFromImage(image, 1.0, (w, h), means_bgr, swapRB=False, crop=False)
+    net.setInput(blob)
+    output = net.forward()
+    output = output.reshape((3, output.shape[2], output.shape[3]))
+    for i in range(3):
+        output[i] += means_bgr[i]
+    output = output.transpose(1, 2, 0).clip(min=0, max=255).astype(np.uint8)
 
-    return st_images
+    return output
     # Reference: https://www.pyimagesearch.com/2018/08/27/neural-style-transfer-with-opencv/
 
 # Run with cli in ImageArtSite.py folder:

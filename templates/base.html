@@ -18,8 +18,7 @@
 </form>
 
 <p>
-    Original image. Server path: {{file_paths and file_paths['uploaded_file_path']}} <br>
-    <img src="{{ file_paths['uploaded_file_path'] | default('static/cat.jpg') }}"
+    Original image. Server path: {{file_paths and file_paths['uploaded_path']}} <br>
+    <img src="{{ file_paths['uploaded_path'] | default('static/cat.jpg') }}"
          alt="Uploaded image" width="640" height="480" />
 </p>
-
